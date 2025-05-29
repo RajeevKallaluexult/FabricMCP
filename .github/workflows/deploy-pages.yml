@@ -1,73 +1,46 @@
 name: Deploy static site to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-  
-  # Allows manual workflow runs
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Check out repository
         uses: actions/checkout@v3
-      
-      - name: Setup Pages
+
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v3
-      
+
       - name: Prepare site content
         run: |
-          # Create a directory for our site
           mkdir -p _site
-          
-          # Find the newIndex.html file
           NEWINDEX_PATH=$(find . -name "newIndex.html" | head -n 1)
-          
+
           if [ -n "$NEWINDEX_PATH" ]; then
-            # Get the directory containing newIndex.html
             SOURCE_DIR=$(dirname "$NEWINDEX_PATH")
-            
-            # Copy all files from that directory to _site
             cp -r "$SOURCE_DIR"/* _site/
-            
-            # Rename newIndex.html to index.html
             mv _site/newIndex.html _site/index.html
-            
             echo "Files prepared for deployment from $SOURCE_DIR"
           else
             echo "Error: newIndex.html not found in repository"
             exit 1
           fi
-      
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: site-content
-          path: _site
-          retention-days: 1
-      
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: '_site'
-      
+          path: _site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
