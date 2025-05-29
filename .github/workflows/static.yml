@@ -21,6 +21,9 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v3
 
+      - name: Setup Actions
+        uses: actions/setup-node@v3
+
       - name: Prepare site content
         run: |
           NEWINDEX_PATH=$(find . -name "newIndex.html" | head -n 1)
@@ -47,7 +50,7 @@ jobs:
           fi
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: _site
 
