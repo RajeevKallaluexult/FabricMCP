@@ -1,64 +1,43 @@
-name: Deploy static site to GitHub Pages
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
+  # Single deploy job since we're just deploying
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-
-      - name: Setup Actions
-        uses: actions/setup-node@v3
-
-      - name: Prepare site content
-        run: |
-          NEWINDEX_PATH=$(find . -name "newIndex.html" | head -n 1)
-
-          if [ -n "$NEWINDEX_PATH" ]; then
-            SOURCE_DIR=$(dirname "$NEWINDEX_PATH")
-            echo "Found newIndex.html in $SOURCE_DIR"
-            
-            # Create _site directory after finding the source
-            mkdir -p _site
-            
-            # Check if SOURCE_DIR is not _site itself or contains _site
-            if [[ "$SOURCE_DIR" == "./_site"* || "$SOURCE_DIR" == "_site"* ]]; then
-              echo "Error: Source directory ($SOURCE_DIR) is or contains the destination directory (_site)"
-              exit 1
-            else
-              cp -r "$SOURCE_DIR"/* _site/
-              mv _site/newIndex.html _site/index.html
-              echo "Files prepared for deployment from $SOURCE_DIR"
-            fi
-          else
-            echo "Error: newIndex.html not found in repository"
-            exit 1
-          fi
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
-
+          # Upload entire repository
+          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
-      
-      - name: Upload deployment status
-        uses: actions/upload-artifact@v2
-        with:
-          name: deployment-status
+        uses: actions/deploy-pages@v4
