@@ -56,6 +56,13 @@ jobs:
             exit 1
           fi
       
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: site-content
+          path: _site
+          retention-days: 1
+      
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
